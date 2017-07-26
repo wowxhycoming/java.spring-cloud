@@ -4,6 +4,7 @@
 
 1. 根项目配置
 2. cloud-boot
+3. cloud-eureka-server
 
 ## 根项目配置
 
@@ -134,3 +135,102 @@
     ```
     
     >访问 `http://localhost:60001/health` 查看结果。
+
+## cloud-eureka-server
+
+1. 在跟项目下创建 `cloud-eureka-server` 的 `Module` 。
+
+    在 `pom` 中添加依赖 eureka-server 、 监控 和 打包工具的 依赖
+    
+    ```
+    <dependencies>
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-eureka-server</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
+    ```
+    
+2. 创建主类 `EurekaServerApplication` 
+
+    ```
+    @EnableEurekaServer
+    @SpringBootApplication
+    public class EurekaServerApplication {
+    
+        public static void main(String[] args) {
+            SpringApplication.run(EurekaServerApplication.class, args);
+        }
+    
+    }
+    ```
+
+3. 修改 host 文件
+
+    ```
+    127.0.0.1 eureka-server-1
+    127.0.0.1 eureka-server-2
+    127.0.0.1 eureka-server-3
+    ```
+
+4. 创建配置文件 application.yml
+
+    ```
+    spring:
+      application:
+        # 应用名称
+        name: eureka-server
+    
+    server:
+      # eureka 的服务端口
+      port: 60897
+    
+    eureka:
+      # 环境名称
+      environment: dev
+      instance:
+        # 代表了一个启动示例的标识 自定义，可以显示在控制台上
+        instance-id: ${spring.cloud.client.ipAddress}:${server.port}
+        hostname: localhost
+        prefer-ip-address: true
+      client:
+        # 服务是否注册到注册中心
+        registerWithEureka: true
+    #    # 是否获取注册中心注册服务的列表
+        fetchRegistry: true
+        serviceUrl:
+    #      # 注册对应的eureka的默认域，一般添加对应注册中心地址
+          defaultZone: http://eureka-server-1:60897/eureka/,http://eureka-server-2:60898/eureka/,http://eureka-server-3:60899/eureka/
+
+    ```
+    
+    > 这里 `defaultZone` 为什么要使用域名。  
+    在 eureka 集群中，所有节点的名字都一样，让 eureka 午饭分辨，导致 `DS Replicas` 错误。
+
+5. 当前 Module 下创建 `command\windows` 文件夹
+
+    ```
+    java -jar ../../target/cloud-eureka-server-1.0-SNAPSHOT.jar --server.port=60897
+    java -jar ../../target/cloud-eureka-server-1.0-SNAPSHOT.jar --server.port=60898
+    java -jar ../../target/cloud-eureka-server-1.0-SNAPSHOT.jar --server.port=60899
+    ```
+    
+    以上三条命令，创建三个 `.bat` 文件。
+    
+    分别启动三个 `bat` 文件，访问 `http://eureka-server-1:60897/` `http://eureka-server-2:60898/` `http://eureka-server-3:60899/` 查看效果。
+    
+    > 这里查看网页信息 `General Info` 部分，三个分片的状态为 `unavailable-replicas` 下，可能是因为节点的IP都相同造成的，多个节点分布在不同的机器，状态就会变为 `available-replicas` 。
