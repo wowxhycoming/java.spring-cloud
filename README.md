@@ -234,3 +234,20 @@
     分别启动三个 `bat` 文件，访问 `http://eureka-server-1:60897/` `http://eureka-server-2:60898/` `http://eureka-server-3:60899/` 查看效果。
     
     > 这里查看网页信息 `General Info` 部分，三个分片的状态为 `unavailable-replicas` 下，可能是因为节点的IP都相同造成的，多个节点分布在不同的机器，状态就会变为 `available-replicas` 。
+    
+    > 不用关心 `General Info` 下的 `unavailable-replicas` ，不耽误正常使用。
+    
+6. cloud-eureka-server 中一些概念
+
+    配置文件中的几个关键概念：  
+    Eureka Server
+    >注册中心。它提供一个用于注册的服务和一个REST api ，来使它可以注册、注销、发现其他服务。
+    
+    Eureka Service
+    >可以在注册中心注册的和被其他应用发现的 任何应用。 一个 Eureka Service 拥有逻辑描述符或 service id，可以使用它们找到一个或多个相同的应用实例。
+    
+    Eureka Instance
+    >为了被发现把自己注册到 Eureka Server 的应用。
+    
+    Eureka Client
+    >主动发现其他 Eureka Service 的应用。
