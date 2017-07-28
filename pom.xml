@@ -11,6 +11,8 @@
     <modules>
         <module>cloud-boot</module>
         <module>cloud-eureka-server</module>
+        <module>cloud-biz-instance</module>
+        <module>cloud-biz-client</module>
     </modules>
 
     <parent>

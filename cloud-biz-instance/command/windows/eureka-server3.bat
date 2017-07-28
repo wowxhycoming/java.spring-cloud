@@ -1,0 +1,1 @@
+java -jar ../../target/cloud-biz-instance-1.0-SNAPSHOT.jar --server.port=60013 --service.name=service3 --service.ip=10.7.13.3 --service.port=8083

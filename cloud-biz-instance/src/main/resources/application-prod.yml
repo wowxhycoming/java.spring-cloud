@@ -1,0 +1,91 @@
+spring:
+  application:
+    # 应用名称
+    name: provider
+server:
+  # 服务端口
+  port: 8000
+eureka:
+  instance:
+    #  调用的时候使用IP 优先  而不是使用域名
+    prefer-ip-address: true
+    # 表示eureka client发送心跳给server端的频率   默认30秒  这个值决定了服务注册的快慢
+    lease-renewal-interval-in-seconds: 10
+    # 表示eureka server至上一次收到client的心跳之后，等待下一次心跳的超时时间，在这个时间内若没收到下一次心跳，则将移除该instance。  默认90秒
+    lease-expiration-duration-in-seconds: 20
+    # 代表了一个启动示例的标识 自定义，可以显示在控制台上
+    instance-id: ${spring.cloud.client.ipAddress}:${server.port}
+#    environment: test
+  client:
+    # 服务是否注册到注册中心
+    registerWithEureka: true
+    # 是否获取注册中心注册服务的列表
+    fetchRegistry: true
+    serviceUrl:
+      # 注册对应的eureka的默认域，一般添加对应注册中心地址
+      defaultZone: http://eureka-server-1:60897/eureka/,http://eureka-server-2:60898/eureka/,http://eureka-server-3:60899/eureka/
+
+hystrix:
+  command:
+    default:
+      circuitBreaker:
+# 隔离策略：THREAD（默认）：每个服务单独分开定义限制的请求数, SEMAPHORE：请求数号量计数（整体的一个量）
+#hystrix.command.default.execution.isolation.strategy
+# 断路器超时时间 默认：	1000
+#hystrix.command.default.execution.isolation.thread.timeoutInMilliseconds
+# 断路器超时时间是否开启 默认:true
+#hystrix.command.default.execution.timeout.enabled
+# 断路器超时时间到了，是否选择打断 默认：true
+#hystrix.command.default.execution.isolation.thread.interruptOnTimeout
+# 熔断器的最大并发请求数，默认：	10
+# For example, 5000rps on a single instance for in-memory lookups with metrics being gathered has been seen to work with a semaphore of only 2.
+#hystrix.command.default.execution.isolation.semaphore.maxConcurrentRequests
+# 是否开启降级处理，默认：true
+#hystrix.command.default.fallback.enabled
+# 断路器开关，用来检测服务的是否健康，在断路器跳闸的情况下短路请求。 默认：true
+#hystrix.command.default.circuitBreaker.enabled
+# 最小请求数，用来跳闸回路。默认：20
+#hystrix.command.default.circuitBreaker.requestVolumeThreshold
+#        requestVolumeThreshold: 10
+# 跳闸后，到下次短路判定的间隔时间。 默认：5000
+#hystrix.command.default.circuitBreaker.sleepWindowInMilliseconds
+# 请求错误达到一个百分比或以上时，跳闸，短路请求并进入fallback逻辑。 默认：	50
+#hystrix.command.default.circuitBreaker.errorThresholdPercentage
+#        errorThresholdPercentage: 10
+# 强制短路，拒绝所有请求。 默认false
+#hystrix.command.default.circuitBreaker.forceOpen
+# 强制关闭断路器，不管错误的百分比有多少。 默认：false
+#hystrix.command.default.circuitBreaker.forceClosed
+# 在该设置秒数里面 满足错误条件则熔断器断开
+#hystrix.command.default.metrics.rollingStats.timeInMilliseconds
+#      metrics:
+#        rollingStats:
+#          timeInMilliseconds: 2000
+# 未知
+#hystrix.command.default.metrics.rollingStats.numBuckets
+# 百分比错误是否生效,默认：true
+#hystrix.command.default.metrics.rollingPercentile.enabled
+# 百分比错误的统计时间，默认：60000
+#hystrix.command.default.metrics.rollingPercentile.timeInMilliseconds
+# 未知
+#hystrix.command.default.metrics.rollingPercentile.numBuckets
+# 参与百分比统计的队列数，默认：	100
+#hystrix.command.default.metrics.rollingPercentile.bucketSize
+# 获取健康检查的间隔时间，默认： 500
+#hystrix.command.default.metrics.healthSnapshot.intervalInMilliseconds
+
+# 请求缓存是否开启
+#hystrix.command.default.requestCache.enabled
+# 请求日志是否开启
+#hystrix.command.default.requestLog.enabled
+
+# 核心线程池size。HystrixCommands可以并发执行的最大数量。默认：10
+#hystrix.threadpool.default.coreSize
+# 最大队列数量。默认-1，使用SynchronousQueue。其他正数则使用LinkedBlockingQueue。
+#hystrix.threadpool.default.maxQueueSize
+# 队列大小拒绝阈值
+#hystrix.threadpool.default.queueSizeRejectionThreshold
+
+#hystrix.threadpool.default.keepAliveTimeMinutes
+#hystrix.threadpool.default.metrics.rollingStats.timeInMilliseconds
+#hystrix.threadpool.default.metrics.rollingPercentile.numBuckets

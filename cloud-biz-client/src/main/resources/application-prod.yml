@@ -1,0 +1,60 @@
+spring:
+  application:
+    # 应用名称
+    name: consumer
+server:
+  # 服务端口
+  port: 9000
+eureka:
+  instance:
+    #  调用的时候使用IP 优先  而不是使用域名
+    prefer-ip-address: true
+    # 表示eureka client发送心跳给server端的频率   默认30秒  这个值决定了服务注册的快慢
+    lease-renewal-interval-in-seconds: 10
+    # 表示eureka server至上一次收到client的心跳之后，等待下一次心跳的超时时间，在这个时间内若没收到下一次心跳，则将移除该instance。  默认90秒
+    lease-expiration-duration-in-seconds: 30
+    # 代表了一个启动示例的标识 自定义，可以显示在控制台上
+    instance-id: ${spring.cloud.client.ipAddress}:${server.port}
+#    environment: test
+  client:
+    # 服务是否注册到注册中心
+    registerWithEureka: true
+    # 是否获取注册中心注册服务的列表
+    fetchRegistry: true
+    serviceUrl:
+      # 注册对应的eureka的默认域，一般添加对应注册中心地址
+      defaultZone: http://eureka-server-1:60897/eureka/,http://eureka-server-2:60898/eureka/,http://eureka-server-3:60899/eureka/
+
+# Ribbon
+ribbon:
+  eureka:
+    enabled: true
+
+# 自定义负载均衡策略
+provider:
+  ribbon:
+#    NFLoadBalancerRuleClassName:  com.netflix.loadbalancer.RandomRule  #  随机策略
+    NFLoadBalancerRuleClassName:  com.zihexin.controller.ribbon.rule.MyRibbonRule
+#    listOfServers: 10.7.13.109:8000,10.7.13.109:8001 #假设provider有1台instance端口分别是8000
+# 刷新服务列表的时间
+    ServerListRefreshInterval: 15000
+#
+
+feign:
+  httpclient:
+    enabled: true
+  compression:
+    request:
+      enabled:  true
+      mime-types: text/xml,application/xml,application/json
+      min-request-size: 2048
+    response:
+      enabled:  true
+  hystrix:
+    enabled: true
+
+# HttpClient 配置
+httpclient:
+  timeout: 60
+  maxtotal: 200
+  maxperroute: 20

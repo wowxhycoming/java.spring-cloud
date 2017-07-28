@@ -5,6 +5,7 @@
 1. 根项目配置
 2. cloud-boot
 3. cloud-eureka-server
+4. cloud-biz-instance(provider) , cloud-biz-client(consumer)
 
 ## 根项目配置
 
@@ -77,7 +78,7 @@
 
 ## cloud-boot
 
-1. 在跟项目下创建 `cloud-boot` 的 `Module` 。
+1. 在根项目下创建 `cloud-boot` 的 `Module` 。
 
     在 `pom` 中添加依赖 spring-boot 依赖
     
@@ -251,3 +252,231 @@
     
     Eureka Client
     >主动发现其他 Eureka Service 的应用。
+    
+
+## cloud-biz-instance(provider) , cloud-biz-client(consumer)
+
+注册中心建设完毕，就该在注册中心上注册服务 和 使用服务了。
+
+为了区分 `eureka` 服务上注册的角色，这里使用两个项目分别承担不同角色。
+
+1. 在根项目下创建 `cloud-biz-instance` 的子 `Module` 。
+
+    POM 文件中增加依赖和打包工具
+    ```
+    <dependencies>
+    
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+
+        <!-- eureka客户端 -->
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-eureka</artifactId>
+        </dependency>
+
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
+    ```
+    
+2. 创建主类，固定角色
+
+    使用如下注解
+    ```
+    @SpringBootApplication
+    @EnableEurekaClient
+    ```
+    
+3. 创建一个 controller 提供服务
+
+    这个 controller 需要实现读取 properties 中的值，然后返回给客户端。
+    
+    并且可以根据命令行启动参数来决定读取哪个配置文件。当然不同配置文件中的 key 相同，value 不同。
+    
+    用于区分多个实例提供相同服务。
+    
+    ```
+    @RestController
+    @RequestMapping("/value")
+    public class BizInstanceController {
+    
+        @Autowired
+        private Property property;
+    
+        public Property getProperty() {
+            return property;
+        }
+    
+        public void setProperty(Property property) {
+            this.property = property;
+        }
+    
+        /**
+         * 返回 properties 中的内容，也有可能是通过命令行参数传入的参数
+         * @return
+         */
+        @RequestMapping("/properties")
+        public String getValue() {
+            return property.toString();
+        }
+    }
+    ```
+    
+    当前 controller 中注入了一个类型 Property， 是自己编写的用于读取配置文件的一个映射类。其实现也很简单：
+    ```
+    @Component
+    @ConfigurationProperties(prefix="service")
+    public class Property {
+    
+        private String name;
+        private String ip;
+        private int port;
+    
+        // getter and setter ...
+    
+        @Override
+        public String toString() {
+            return "Property{" +
+                    "name='" + name + '\'' +
+                    ", ip='" + ip + '\'' +
+                    ", port=" + port +
+                    '}';
+        }
+    }
+    ```
+    
+5. 配置如何注册服务
+
+    * application.yml 
+    ```
+    # 指定激活的配置文件
+    spring:
+      profiles:
+        active: dev
+    
+    # 用于被 @ConfigurationProperties 读取的属性
+    service:
+      name: service1
+      ip: 127.0.0.1
+      port: 801
+    ```
+    
+    * application-dev.yml
+    ```
+    spring:
+      application:
+        # 应用名称
+        name: cloud-biz-instance
+    server:
+      # 服务端口
+      port: 60011
+    
+    eureka:
+      instance:
+        # 代表了一个启动示例的标识 自定义，可以显示在控制台上
+        instance-id: ${spring.cloud.client.ipAddress}:${server.port}
+      client:
+        # 服务是否注册到注册中心
+        registerWithEureka: true
+        # 是否获取注册中心注册服务的列表
+        fetchRegistry: true
+        serviceUrl:
+          # 注册对应的eureka的默认域，一般添加对应注册中心地址
+          defaultZone: http://eureka-server-1:60897/eureka/,http://eureka-server-2:60898/eureka/,http://eureka-server-3:60899/eureka/
+    ```
+    
+6. 创建启动脚本
+
+    因为需要启动多个实例进行负载均衡和容灾，将下面命令制作成三个不同的启动脚本，以用于启动实例
+    ```
+    java -jar ../../target/cloud-biz-instance-1.0-SNAPSHOT.jar --server.port=60011 --service.name=service1 --service.ip=10.7.13.1 --service.port=8081
+    java -jar ../../target/cloud-biz-instance-1.0-SNAPSHOT.jar --server.port=60012 --service.name=service2 --service.ip=10.7.13.2 --service.port=8082
+    java -jar ../../target/cloud-biz-instance-1.0-SNAPSHOT.jar --server.port=60013 --service.name=service3 --service.ip=10.7.13.3 --service.port=8083
+    ```
+    脚本中，重新指定了服务启动的端口 和 覆盖了应用要读取的值。
+    
+    > 像以前一样，可以单独访问看看服务是否可用
+
+7. 在根项目下创建 `cloud-biz-client` 的子 `Module` 用于访问被集群化的 `cloud-biz-instance`
+
+    POM 文件中增加依赖和打包工具
+    ```
+    <dependencies>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+
+        <!-- eureka客户端 -->
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-eureka</artifactId>
+        </dependency>
+
+    </dependencies>
+    ```
+    
+8. 创建主类
+
+    使用如下注解
+    ```
+    @SpringBootApplication
+    @EnableEurekaClient
+    ```
+    
+9. 创建 controller 来测试服务
+
+    ```
+    @RestController
+    @RequestMapping("/view")
+    public class BizClientController {
+    
+        @Autowired
+        RestTemplate client;
+    
+        @Bean
+        @LoadBalanced
+        public RestTemplate restTemplate() {
+            RestTemplate template = new RestTemplate();
+            SimpleClientHttpRequestFactory factory = (SimpleClientHttpRequestFactory) template.getRequestFactory();
+            factory.setConnectTimeout(3000);
+            factory.setReadTimeout(3000);
+            return template;
+        }
+    
+        @RequestMapping("/properties")
+        public String getValue() {
+            String result = client.getForObject("http://CLOUD-BIZ-INSTANCE/value/properties/",String.class);
+            System.out.println("return from instance : " + result);
+    
+            return client.getForObject("http://CLOUD-BIZ-INSTANCE/value/properties/",String.class);
+        }
+    }
+    ```
+    
+10. 启动 client 服务器
+
+    作为 client 服务，不需要启动多个实例，只需要启动一个实例多次访问检验即可。
+    
+    > 访问 `http://127.0.0.1:60021/view/properties` ，发现返回的信息是轮询的，这是 eureka 的默认策略。
