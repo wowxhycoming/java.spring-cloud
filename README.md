@@ -302,6 +302,8 @@
     @EnableEurekaClient
     ```
     
+    >开启 `@EnableEurekaClient` 服务会注册到 EurekaServer 上。
+    
 3. 创建一个 controller 提供服务
 
     这个 controller 需要实现读取 properties 中的值，然后返回给客户端。
@@ -444,6 +446,8 @@
     @SpringBootApplication
     @EnableEurekaClient
     ```
+    
+    >开启 `@EnableEurekaClient` 服务也可以从 EurekaServer 查询其他服务。
     
 9. 创建 controller 来测试服务
 
