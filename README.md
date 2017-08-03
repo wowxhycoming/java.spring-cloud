@@ -690,6 +690,11 @@ spring:
 clean 项目重新 package 。
 
 1. 启动 cloud-config-server(确保配置文件已经上传的到版本库，config-server 才有意义)
+
+    启动过后可以访问 config-server 根目录 + 配置文件名 来验证服务是否正确，例如
+    ```
+    http://localhost:60999/cloud-biz-client-dev.properties
+    ```
 2. 启动 cloud-eureka-server(多节点)
 3. 启动 cloud-biz-instance(多节点)
 4. 启动 cloud-biz-client

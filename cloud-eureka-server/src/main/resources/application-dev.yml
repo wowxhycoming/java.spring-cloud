@@ -22,4 +22,4 @@ eureka:
     fetchRegistry: true
     serviceUrl:
 #      # 注册对应的eureka的默认域，一般添加对应注册中心地址
-      defaultZone: ${eureka.server.default.zone}
+      defaultZone: ${project.eureka.server.default.zone}
