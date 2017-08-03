@@ -685,6 +685,15 @@ spring:
     defaultZone: ${eureka.server.default.zone}
     ```
     
+7. 添加读取 config-server 的引用
+
+    ```
+    <dependency>
+        <groupId>org.springframework.cloud</groupId>
+        <artifactId>spring-cloud-starter-config</artifactId>
+    </dependency>
+    ```
+    
 ### 项目启动顺序
 
 clean 项目重新 package 。

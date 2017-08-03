@@ -5,6 +5,7 @@ spring:
     active: dev
   cloud:
     config:
-      uri: http://127.0.0.1:${config.port:60999} #表示如果在命令行提供了就使用命令行参数
+      uri: http://127.0.0.1:60999 #表示如果在命令行提供了就使用命令行参数
+#      uri: http://127.0.0.1:${config.port:60999} #表示如果在命令行提供了就使用命令行参数
 #      name: cloud-boot-service # 等于 spring.application.name 但优先级低
 #      profile: ${config.profile:dev} # 等于 spring.profiles.active 但优先级低
