@@ -1,6 +1,6 @@
 spring:
   application:
-    name: cloud-biz-instance
+    name: cloud-biz-client
   profiles:
     active: dev
   cloud:

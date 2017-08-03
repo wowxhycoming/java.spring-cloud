@@ -1,20 +1,25 @@
 spring:
   application:
     # 应用名称
-    name: cloud-biz-instance
+    name: cloud-eureka-server
+
 server:
-  # 服务端口
-  port: 60011
+  # eureka 的服务端口
+  port: 60897
 
 eureka:
+  # 环境名称
+  environment: dev
   instance:
     # 代表了一个启动示例的标识 自定义，可以显示在控制台上
     instance-id: ${spring.cloud.client.ipAddress}:${server.port}
+    hostname: localhost
+    prefer-ip-address: true
   client:
     # 服务是否注册到注册中心
     registerWithEureka: true
-    # 是否获取注册中心注册服务的列表
+#    # 是否获取注册中心注册服务的列表
     fetchRegistry: true
     serviceUrl:
-      # 注册对应的eureka的默认域，一般添加对应注册中心地址
+#      # 注册对应的eureka的默认域，一般添加对应注册中心地址
       defaultZone: ${eureka.server.default.zone}
