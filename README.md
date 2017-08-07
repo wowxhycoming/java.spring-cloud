@@ -707,3 +707,9 @@ clean 项目重新 package 。
 2. 启动 cloud-eureka-server(多节点)
 3. 启动 cloud-biz-instance(多节点)
 4. 启动 cloud-biz-client
+
+## eureka 的负载均衡
+
+更改了项目 `cloud-biz-client` 下的 `BizClientController` ，使用三种方式调用服务，其中两种是有负载均衡功能的。
+
+> 可以看出 spring cloud 是在客户端实现负责均衡策略。
